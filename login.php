@@ -1,59 +1,132 @@
-<!doctype html>
-<!-- If multi-language site, reconsider usage of html lang declaration here. -->
-<html lang="en"> 
-  <head>
-    <meta charset="utf-8">
-    <title>Client</title>
-  
-    <!-- 120 word description for SEO purposes goes here. Note: Usage of lang tag. -->
-    <meta name="description" lang="en" content="">
-    
-    <!-- Keywords to help with SEO go here. Note: Usage of lang tag.  -->
-    <meta name="keywords" lang="en" content="">
-    
-    <!-- View-port Basics: http://mzl.la/VYREaP -->
-    <!-- This meta tag is used for mobile device to display the page without any zooming,
-        so how much the device is able to fit on the screen is what's shown initially. 
-        Remove comments from this tag, when you want to apply media queries to the website. -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    
-    <!-- To adhear no-cache for Chrome -->
-    <!-- <meta http-equiv="cache-control" content="no-store, no-cache, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-store, no-cache" />
-    <meta http-equiv="Expires" content="0" /> -->
+<?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+// Start a session to store user data
+session_start();
+$emailErrorFlag = $passErrorFlag = 0;
+$email = $password = $errorMsg = $passwordErr = $emailErr = "";
+// Function to validate and sanitize input
+function validateInput($data)
+{
+    $data = trim($data);
+    $data = htmlspecialchars($data);
+    return $data;
+}
 
-    <!-- Place favicon.ico in the root directory: mathiasbynens.be/notes/touch-icons -->
-    <link rel="shortcut icon" href="favicon.ico" />
+// Function to check if email exists in the database
+function emailExists($dbconnection, $email)
+{
+    $stmt = $dbconnection->prepare("SELECT email FROM users WHERE email = ?");
+    $stmt->bind_param('s', $email);
+    $stmt->execute();
+    $stmt->store_result();
+    $count = $stmt->num_rows;
+    $stmt->close();
+    return $count > 0;
+}
 
-    <!--font-awesome link for icons-->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+// Function to validate password
+function validatePassword($password)
+{
+    global $passErrorFlag;
+    $password = validateInput($password);
 
-    <!-- Default style-sheet is for 'media' type screen (color computer display).  -->
-    <link rel="stylesheet" media="screen" href="assets/css/style.css" >
-  </head>
-  <body>
-    <!--container starts here-->
-    <div class="container">
-      <!--header starts here-->
-      <header>
-        
-      </header>
-      <!--header ends here-->
-      <!--main starts here-->
-      <main>
+    if (empty($password)) {
+        $passErrorFlag = 1;
+        return "Password is required";
+    } elseif (!preg_match("/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@#$%^&+=!])[A-Za-z\d@#$%^&+=!]{8,}$/", $password)) {
+        $passErrorFlag = 1;
+        return "Enter a valid password";
+    }
 
-      </main>
-      <!--main ends here-->
+    $passErrorFlag = 0;
+    return "";
+}
 
-      <!--footer starts here-->
-      <footer>      
+// Function to validate email
+function validateEmail($conn, $email)
+{
+    global $emailErrorFlag;
+    $email = validateInput($email);
 
-      </footer>
-      <!--footer ends here-->
+    if (empty($email)) {
+        $emailErrorFlag = 1;
+        return "Email is required";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $emailErrorFlag = 1;
+        return "Invalid email format";
+    } elseif (emailExists($conn, $email)) {
+        $emailErrorFlag = 1;
+        return "Email already exists";
+    }
 
-    </div>
-    <!--container ends here-->
-    <script src="js/vendors/jquery-1.8.3.min.js"></script>
-    <script src="js/script.js"></script>
-  </body>
+    $emailErrorFlag = 0;
+    return "";
+}
+
+// Check if the form is submitted
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    require_once "dbconnect.php";
+
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+
+    // Initialize error flags
+    $emailErrorFlag = $passErrorFlag = 0;
+
+    // Validate email and password
+    $emailErr = validateEmail($dbconnection, $email);
+    $passwordErr = validatePassword($password);
+
+    // If there are no validation errors, proceed with authentication
+    if ($emailErrorFlag === 0 && $passErrorFlag === 0) {
+        try {
+            // Perform authentication based on your business logic
+            // For now, let's assume successful authentication for admin
+            if ($email === "admin@email.com" && $password === "P@ssw0rd") {
+                $_SESSION['user'] = 'admin'; // Store user data in the session
+                header("Location: adminlistingpage.php");
+                exit();
+            } else {
+                header("Location: view.php");
+                exit();
+            }
+        } catch (Exception $e) {
+            $errorMsg = "Error: " . $e->getMessage();
+        }
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cookies And Session</title>
+    <!-- Add your meta tags and links here -->
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1 style="font-weight:bold; font-size:25px;">Login Page</h1><br>
+    </header>
+    <main>
+        <section class="login-form">
+            <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+                <label for="email">Email :</label>
+                <input type="text" name="email" value="<?php echo htmlspecialchars($email); ?>">
+                <span class="error"><?php echo $emailErr; ?></span><br><br>
+                <label for="password">Password :</label>
+                <input type="password" name="password">
+                <span class="error"><?php echo $passwordErr; ?></span><br><br>
+                <input type="submit" value="Submit">&nbsp;
+                <a href="./register.php">Register</a>
+            </form>
+        </section>
+        <p class="main-error"><?php echo isset($errorMsg) ? $errorMsg : ''; ?></p>
+    </main>
+</div>
+<script src="js/vendors/jquery-1.8.3.min.js"></script>
+<script src="./assets/js/script.js"></script>
+</body>
 </html>
