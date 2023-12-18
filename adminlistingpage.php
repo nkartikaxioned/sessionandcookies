@@ -1,6 +1,10 @@
 <?php
 session_start();
-
+$login = isset($_SESSION["logged"]) ? $_SESSION["logged"] : false;
+if($login != "OK"){
+  header("Location: index.php");
+  exit();    
+}
 if (!isset($_SESSION['sessionID']) || !isset($_COOKIE['sessionID'])) {
   header("Location: index.php");
   exit();
@@ -16,7 +20,7 @@ if (isset($_POST['logout'])) {
 
 session_destroy();
 setcookie('sessionID', '', time() - 3600, '/', '', false, true);
-header("Location: login.php");
+header("Location: index.php");
 }
 ?>
 <!DOCTYPE html>
