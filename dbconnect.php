@@ -3,7 +3,7 @@ $errorMsg = '';
 $dbhost = "localhost";
 $dbusername = "phpmyadmin";
 $dbpassword = "root";
-$dbname = "cookieandsession";
+$dbname = "cookiesandsession";
 try {
     $dbconnection = mysqli_connect($dbhost, $dbusername, $dbpassword, $dbname);
     if (!$dbconnection) {
