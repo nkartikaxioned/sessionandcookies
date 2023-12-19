@@ -57,13 +57,13 @@ if (isset($_POST['logout'])) {
           <?php
           while ($result = mysqli_fetch_assoc($stmt)) {
             echo "
-                        <tr>
-                            <td>" . $result['name'] . "</td>
-                            <td>" . $result['email'] . "</td>
-                            <td>" . $result['phoneno'] . "</td>
-                            <td><a href='delete.php?id={$result['srno']}'>Delete</a></td>
-                        </tr>
-                        ";
+                <tr>
+                    <td>" . $result['name'] . "</td>
+                    <td>" . $result['email'] . "</td>
+                    <td>" . $result['phoneno'] . "</td>
+                    <td><a href='delete.php?id={$result['srno']}'>Delete</a></td>
+                </tr>
+                ";
           }
           ?>
         </table>
