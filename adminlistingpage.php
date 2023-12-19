@@ -10,6 +10,11 @@ if (!isset($_SESSION['sessionID']) || !isset($_COOKIE['sessionID'])) {
   exit();
 }
 
+if (!isset($_SESSION['user']) || $_SESSION['user'] !== 'admin') {
+  header("Location: index.php");
+  exit();
+}
+
 require_once('dbconnect.php');
 if (isset($_POST['logout'])) {
   $_SESSION = array();
@@ -52,6 +57,7 @@ header("Location: index.php");
             <th>Name</th>
             <th>Email</th>
             <th>Phoneno</th>
+            <th>Delete</th>
           </tr>
           <?php
           while ($result = mysqli_fetch_assoc($stmt)) {
@@ -60,6 +66,7 @@ header("Location: index.php");
                             <td>" . $result['name'] . "</td>
                             <td>" . $result['email'] . "</td>
                             <td>" . $result['phoneno'] . "</td>
+                            <td><a href='delete.php?id={$result['srno']}'>Delete</a></td>
                         </tr>
                         ";
           }

@@ -95,6 +95,7 @@
 
   function validatePhoneno($dbconnection, $phoneno)
   {
+    var_dump($phoneno);
     global $phoneerrorflag;
     $phoneno = validateInput($phoneno);
     if (empty($phoneno)) {
