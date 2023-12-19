@@ -1,16 +1,11 @@
 <?php
 session_start();
 $login = isset($_SESSION["logged"]) ? $_SESSION["logged"] : false;
-if($login != "OK"){
-  header("Location: index.php");
-  exit();    
-}
-if (!isset($_SESSION['sessionID']) || !isset($_COOKIE['sessionID'])) {
+if ($login != "OK") {
   header("Location: index.php");
   exit();
 }
-
-if (!isset($_SESSION['user']) || $_SESSION['user'] !== 'admin') {
+if (!isset($_SESSION['sessionID']) || !isset($_COOKIE['sessionID']) && !isset($_SESSION['user']) || $_SESSION['user'] !== 'admin') {
   header("Location: index.php");
   exit();
 }
@@ -21,11 +16,11 @@ if (isset($_POST['logout'])) {
   if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
     setcookie(session_name(), '', time() - 42000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
-}
+  }
 
-session_destroy();
-setcookie('sessionID', '', time() - 3600, '/', '', false, true);
-header("Location: index.php");
+  session_destroy();
+  setcookie('sessionID', '', time() - 3600, '/', '', false, true);
+  header("Location: index.php");
 }
 ?>
 <!DOCTYPE html>

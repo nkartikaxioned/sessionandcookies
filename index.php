@@ -1,6 +1,17 @@
 <?php
 session_start();
 $_SESSION['logged'] = "OK";
+
+// if (isset($_SESSION["logged"]) && $_SESSION["logged"] === "OK") {
+//   if($_SESSION['user'] === 'admin'){
+//     header("Location: adminlistingpage.php");
+//     exit();
+//   }else {
+//     header("Location: view.php");
+//     exit();
+//   }
+// }
+
 $email = $password = $errorMsg = $passwordErr = $emailErr = "";
 
 function validateInput($data)
