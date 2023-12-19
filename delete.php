@@ -6,16 +6,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <script>
-        function confirmDelete() {
-          return confirm("Do you want to delete this record?");
-        }
-    </script>
 </head>
 
 <body>
     <?php
     $id = $_GET['id'];
+    var_dump($id);
     if (isset($_GET['confirm']) && $_GET['confirm'] === 'yes') {
         try {
             $sql = "Delete FROM users where srno = $id";
@@ -31,13 +27,6 @@
         }
     }
     ?>
-    <script>
-        if (confirmDelete()) {
-            window.location.href = 'delete.php?id=<?php echo $id; ?>&confirm=yes';
-        } else {
-            window.location.href = 'adminlistingpage.php';
-        }
-    </script>
 </body>
 
 </html>

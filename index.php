@@ -1,6 +1,5 @@
 <?php
 session_start();
-$_SESSION['logged'] = "OK";
 
 if (isset($_SESSION['sessionID']) && $_SESSION['sessionID'] === $_COOKIE['sessionID']) {
   if ($_SESSION['user'] === 'admin') {
@@ -57,7 +56,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $emailErrorFlag = $passErrorFlag = 0;
   $emailErr = validateEmail($dbconnection, $email);
   $passwordErr = validatePassword($password);
-
+  
+  function loginUser($username, $sessionID, $redirectLocation) {
+    $_SESSION['user'] = $username;
+    $_SESSION['sessionID'] = $sessionID;
+    setcookie('sessionID', $sessionID, time() + 3600, '/', '', false, true);
+    header("Location: $redirectLocation");
+    exit();
+}
   if ($emailErrorFlag === 0 && $passErrorFlag === 0) {
     try {
       $sql = "SELECT * FROM users WHERE email = ? AND password = ?";
@@ -66,24 +72,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       mysqli_stmt_execute($stmt);
       mysqli_stmt_store_result($stmt);
       $rowCount = mysqli_stmt_num_rows($stmt);
-        if ($email === "admin@email.com" && $password === "P@ssw0rd") {
-          $sessionID = bin2hex(random_bytes(32));
-          $_SESSION['user'] = 'admin';
-          $_SESSION['sessionID'] = $sessionID;
-          setcookie('sessionID', $sessionID, time() + 3600, '/', '', false, true);
-          header("Location: adminlistingpage.php");
-          exit();
-        } elseif ($rowCount !== 0) {
-          $sessionID = bin2hex(random_bytes(32));
-          var_dump($_SESSION);
-          $_SESSION['user'] = $_POST['email'];
-          $_SESSION['sessionID'] = $sessionID;
-          setcookie('sessionID', $sessionID, time() + 3600, '/', '', false, true);
-          header("Location: view.php");
-          exit();
-        } else {
-          $errorMsg = "Invalid username and password!";
-        }
+      $sessionID = bin2hex(random_bytes(32));
+      $_SESSION["logged"] = "OK";
+      if ($email === "admin@email.com" && $password === "P@ssw0rd") {
+        loginUser('admin', $sessionID, 'adminlistingpage.php');
+    } elseif ($rowCount > 0) {
+        loginUser($email, $sessionID, 'view.php');
+    } else {
+      $errorMsg = "Invalid username and password!";
+      session_destroy();
+    }
     } catch (Exception $e) {
       $errorMsg = "Error: " . $e->getMessage();
     }
