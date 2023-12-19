@@ -3,12 +3,12 @@ session_start();
 $_SESSION['logged'] = "OK";
 
 if (isset($_SESSION['sessionID']) && $_SESSION['sessionID'] === $_COOKIE['sessionID']) {
-  if($_SESSION['user'] === 'admin'){
+  if ($_SESSION['user'] === 'admin') {
     header("Location: adminlistingpage.php");
-  }else {
+  } else {
     header("Location: view.php");
   }
-    exit();
+  exit();
 }
 
 $email = $password = $errorMsg = $passwordErr = $emailErr = "";
@@ -58,34 +58,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $emailErr = validateEmail($dbconnection, $email);
   $passwordErr = validatePassword($password);
 
-  $sql = "SELECT * FROM users WHERE email = ? AND password = ?";
-    $stmt = mysqli_prepare($dbconnection, $sql);
-    mysqli_stmt_bind_param($stmt, "ss", $email, $password);
-    mysqli_stmt_execute($stmt);
-    mysqli_stmt_store_result($stmt);
-    $rowCount = mysqli_stmt_num_rows($stmt);
-
   if ($emailErrorFlag === 0 && $passErrorFlag === 0) {
     try {
-      if ($email === "admin@email.com" && $password === "P@ssw0rd") {
-        $sessionID = bin2hex(random_bytes(32));
-        var_dump($_SESSION);
-        $_SESSION['user'] = 'admin';
-        $_SESSION['sessionID'] = $sessionID;
-        setcookie('sessionID', $sessionID, time() + 3600, '/', '', false, true);
-        header("Location: adminlistingpage.php");
-        exit();
-      } elseif($rowCount !==0) {
-        $sessionID = bin2hex(random_bytes(32));
-        var_dump($_SESSION);
-        $_SESSION['user'] = $_POST['email'];
-        $_SESSION['sessionID'] = $sessionID;
-        setcookie('sessionID', $sessionID, time() + 3600, '/', '', false, true);
-        header("Location: view.php");
-        exit();
-      }else {
-        header("Location: login.php");
-      }
+      $sql = "SELECT * FROM users WHERE email = ? AND password = ?";
+      $stmt = mysqli_prepare($dbconnection, $sql);
+      mysqli_stmt_bind_param($stmt, "ss", $email, $password);
+      mysqli_stmt_execute($stmt);
+      mysqli_stmt_store_result($stmt);
+      $rowCount = mysqli_stmt_num_rows($stmt);
+        if ($email === "admin@email.com" && $password === "P@ssw0rd") {
+          $sessionID = bin2hex(random_bytes(32));
+          $_SESSION['user'] = 'admin';
+          $_SESSION['sessionID'] = $sessionID;
+          setcookie('sessionID', $sessionID, time() + 3600, '/', '', false, true);
+          header("Location: adminlistingpage.php");
+          exit();
+        } elseif ($rowCount !== 0) {
+          $sessionID = bin2hex(random_bytes(32));
+          var_dump($_SESSION);
+          $_SESSION['user'] = $_POST['email'];
+          $_SESSION['sessionID'] = $sessionID;
+          setcookie('sessionID', $sessionID, time() + 3600, '/', '', false, true);
+          header("Location: view.php");
+          exit();
+        } else {
+          $errorMsg = "Invalid username and password!";
+        }
     } catch (Exception $e) {
       $errorMsg = "Error: " . $e->getMessage();
     }
